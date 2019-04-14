@@ -64,4 +64,12 @@ public class CameraController : MonoBehaviour {
         block.SetActive(false);
     }
 
+    public void ResetPos()
+    {
+        Vector3 temp = cameraPos.transform.position;
+        temp.y = 1.0f;
+        temp.z = -10.0f;
+        cameraPos.transform.position = temp;
+    }
+
 }

@@ -13,11 +13,7 @@ public class TimeController : MonoBehaviour {
 
     void Start()
     {
-        SaveTimeData();
-        minute = 0;
-        seconds = 0f;
-        saveSeconds = 0f;
-        decimals = 0f;
+        ResetData();
     }
 
     void Update()
@@ -40,15 +36,24 @@ public class TimeController : MonoBehaviour {
         }
     }
 
+    public void ResetData()
+    {
+        minute = 0;
+        seconds = 0f;
+        saveSeconds = 0f;
+        decimals = 0f;
+        SaveTimeData();
+        timerText.text = minute.ToString("00") + ":"
+            + ((int)seconds).ToString("00") + ":"
+            + ((int)decimals).ToString("00");
+    }
+
     public void LoadData()
     {
 
         //timeTextのtext属性にNOWのキーの文字列を代入。第二引数はデータが保存されてない場合に表示するもの
         timerText.text = PlayerPrefs.GetString("ClearTime", "");
     }
-
-
-
 
     public void SaveTimeData()
     {
@@ -57,5 +62,4 @@ public class TimeController : MonoBehaviour {
         PlayerPrefs.SetFloat("ClearTime", saveSeconds);
         PlayerPrefs.Save();
     }
-
 }

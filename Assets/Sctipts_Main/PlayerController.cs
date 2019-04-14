@@ -5,28 +5,26 @@ using UnityEngine.UI;
 using UniRx;
 using UnityEngine.SceneManagement;
 
-public class PlayerController : MonoBehaviour {
-
-    public Text text;
-
+public class PlayerController : MonoBehaviour 
+{
     [Header("プレイヤーの横移動のスピード")]
     public float playerSpeed = 1.0f;
     public float m_speed;
     public static bool isFeverTouch = false;
 
-    [SerializeField] private TimeController timeController;
-    [SerializeField] private GameObject wall;
-    [SerializeField] private CameraController cameraController;
-    [SerializeField] private GenerateWall generateWall;
-    [SerializeField] private GameObject block, compBlock;
-    [SerializeField] private Button click;
-    [SerializeField] private GameObject tapObj;
-    [SerializeField] private SpriteRenderer heart1, heart2, heart3;
-    [SerializeField] private Sprite getKakera, NotKakera;
-    [SerializeField] private GameObject gameClearText, gameOverEffect, childPlayer;
-    [SerializeField] private Text airiComment;
-    [SerializeField] private Image airiRenderer;
-    [SerializeField] private Sprite smile, angry, normal, happy, zeroPenalty, onePenalty, twoPenalty;
+    [SerializeField] TimeController timeController;
+    [SerializeField] GameObject wall;
+    [SerializeField] CameraController cameraController;
+    [SerializeField] GenerateWall generateWall;
+    [SerializeField] GameObject block, compBlock;
+    [SerializeField] Button click;
+    [SerializeField] GameObject tapObj;
+    [SerializeField] SpriteRenderer heart1, heart2, heart3;
+    [SerializeField] Sprite getKakera, NotKakera;
+    [SerializeField] GameObject gameClearText, gameOverEffect, childPlayer;
+    [SerializeField] Text airiComment;
+    [SerializeField] Image airiRenderer;
+    [SerializeField] Sprite smile, angry, normal, happy, zeroPenalty, onePenalty, twoPenalty;
 
     private SpriteRenderer childPlayersr;
 
@@ -64,7 +62,7 @@ public class PlayerController : MonoBehaviour {
         childPlayersr = childPlayer.GetComponent<SpriteRenderer>();
         childPlayersr.sprite = zeroPenalty;
 
-        AiriCommentText("画面をタップでスタートだよ！", 1);
+        AiriCommentText("画面をタップでスタートだよ！", 3);
 
         //※１＿カケラが３つ取れたらフィーバータイム
         kakeraCount.ObserveEveryValueChanged(_ => _.Value)
@@ -75,7 +73,6 @@ public class PlayerController : MonoBehaviour {
                    .Where(_ => _ < 2 && _ > 0)
                    .Subscribe(_ => AiriCommentText("ハートを集めてフィーバーだ！", 4));
 
-
         breakWallNum.ObserveEveryValueChanged(_ => _.Value)
                    .Where(_ => _ >= 3)
                    .Subscribe(_ => generateWall.InstantiateWall());
@@ -84,10 +81,9 @@ public class PlayerController : MonoBehaviour {
 
     void Update() 
     {
-
         float curY = transform.position.y;
         int wallIndex = brokeWallId + 1;
-        Debug.Log("brokeWallId : " + brokeWallId);
+        //Debug.Log("brokeWallId : " + brokeWallId);
         //※１が発動したらプレイヤーの動き変化
         if (isFeverTouch && !PauseButton.isPause)
         {
@@ -158,7 +154,6 @@ public class PlayerController : MonoBehaviour {
         if (isCountdownStart)
         {
             count += Time.deltaTime;
-            //Debug.Log(count);
         }
 
         if (count >= 0.5f)
@@ -195,6 +190,7 @@ public class PlayerController : MonoBehaviour {
     {
         if (!isFeverTouch)
         {
+            AiriCommentText("ゴールまでがんばって！応援してるよ！", 1);
             sources[0].clip = goStraightSound;
             sources[0].Play();
             clickNum++;
@@ -211,9 +207,7 @@ public class PlayerController : MonoBehaviour {
             {
                 if (hit.collider.tag == "SuccessWall")
                 {
-                    sources[1].clip = breakWallSound;
-                    sources[1].Play();
-
+                    StartCoroutine(PlayBreakWall());
                     anim.SetTrigger("Straight");
                     cameraController.StartTrailPlayer();
                 }
@@ -225,14 +219,18 @@ public class PlayerController : MonoBehaviour {
                     failedNum++;
                     if (failedNum == 1)
                     {
-                        AiriCommentText("壁にぶつかるとダメージを受けちゃうよ", 2);
+                        AiriCommentText("ダメージ受けてるよ！気をつけて！", 2);
                         childPlayersr.sprite = onePenalty;
                     }
 
                     else if(failedNum == 2)
+                    {
+                        AiriCommentText("ダメージ受けてるよ！気をつけて！", 2);
                         childPlayersr.sprite = twoPenalty;
+                    }
 
-                    if (failedNum >= 3){
+                    if (failedNum >= 3)
+                    {
                         isGameOver = true;
                         isGoal = false;
                         clickNum = 0;//時間止まる
@@ -254,7 +252,13 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    IEnumerator PlayBreakWall()
+    {
+        yield return new WaitForSeconds(0.3f);
 
+        sources[1].clip = breakWallSound;
+        sources[1].Play();
+    }
 
     IEnumerator DivideGameOverResult()
     {
@@ -273,6 +277,7 @@ public class PlayerController : MonoBehaviour {
         var velocity = new Vector3(0, 0.1f, 0) * m_speed;
         transform.localPosition += velocity;
     }
+
     //フィーバー時にタップするとスピードあがるよ
     public void SpeedUp()
     {
@@ -281,7 +286,6 @@ public class PlayerController : MonoBehaviour {
             m_speed += 1.0f;
         }
     }
-
 
     private void StartFeverCount()
     {
@@ -319,7 +323,7 @@ public class PlayerController : MonoBehaviour {
                 "oncomplete", "EndFever",
                 "oncompletetarget", this.gameObject
         ));
-        Debug.Log("壊した枚数 : "+ breakWallNum.Value);
+        //Debug.Log("壊した枚数 : "+ breakWallNum.Value);
     }
 
     public void EndFever()
@@ -413,6 +417,30 @@ public class PlayerController : MonoBehaviour {
         }
 
         airiComment.text = cm;
+    }
+
+    public void ResetData()
+    {
+        breakWallNum.Value = 0;
+        kakeraCount.Value = 0;
+        isGameOver = false;
+        isGoal = false;
+        isFeverTouch = false;
+        clickNum = 0;
+        brokeWallId = 0;
+        failedNum = 0;
+        bufferTime = 0;
+        childPlayersr.sprite = zeroPenalty;
+
+        // PlayerのPositionを初期化
+        Vector3 temp = transform.position;
+        temp.x = 0;
+        temp.y = -2.5f;
+        transform.position = temp;
+
+
+        AiriCommentText("画面をタップでスタートだよ！", 3);
+        EndFever();
     }
 
 }
