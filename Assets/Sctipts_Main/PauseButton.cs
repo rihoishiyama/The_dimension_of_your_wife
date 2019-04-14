@@ -6,13 +6,13 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Toggle))]
 public class PauseButton : MonoBehaviour {
 
-    [SerializeField] private Image image;
-    [SerializeField] private Sprite playBackGraphic;
-    [SerializeField] private Sprite pauseGraphic;
-    [SerializeField] private GameObject PauseObj;
-    [SerializeField] private Toggle Toggle;
+    [SerializeField] Image image;
+    [SerializeField] Sprite playBackGraphic;
+    [SerializeField] Sprite pauseGraphic;
+    [SerializeField] GameObject PauseObj;
+    [SerializeField] Toggle Toggle;
     private AudioSource audioSource;
-    [SerializeField] private AudioClip audioClip;
+    [SerializeField] AudioClip audioClip;
 
     public static bool isPause;
 
@@ -46,6 +46,13 @@ public class PauseButton : MonoBehaviour {
             isPause = false;
             Time.timeScale = 1;
         }
+    }
+
+    public void ResetData()
+    {
+        Toggle.isOn = false;
+        PauseObj.SetActive(false);
+        image.sprite = pauseGraphic;
     }
 
 }

@@ -9,7 +9,7 @@ public class TutorialGenerator : MonoBehaviour
 
 	void Awake () 
     {
-        if (!PlayerPrefs.HasKey("In"))
+        if (!PlayerPrefs.HasKey("Init"))
         {
             SaveDataInitialize();
             tutorialCanvas.SetActive(true);
@@ -18,7 +18,7 @@ public class TutorialGenerator : MonoBehaviour
 
     private void SaveDataInitialize()
     {
-        PlayerPrefs.SetInt("Init", 1); // ”Init”のキーをint型の値(1)で保存
+        PlayerPrefs.SetInt("Init", 1); 
         PlayerPrefs.Save();
     }
 }

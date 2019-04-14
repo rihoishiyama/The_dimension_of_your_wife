@@ -5,17 +5,19 @@ using UnityEngine;
 public class GenerateWall : MonoBehaviour {
 
     public float interval;
-    private Vector3 bufferPos;
+    private Vector3 bufferPos, firstWallPos;
     private float bufferScale;
     private int generateNum = 1; //firstwallも含むため
     private float randomScale = 0f;
     [SerializeField] private GameObject Wall;
     [SerializeField] private GameObject kakera;
     [SerializeField] private Transform firstWall;
+    [SerializeField] private GameObject parentObj;
 
 	void Start () 
     {
-        bufferPos = firstWall.position;
+        firstWallPos = firstWall.position;
+        bufferPos = firstWallPos;
         InstantiateWall();
         InstantiateWall();
     }
@@ -39,9 +41,10 @@ public class GenerateWall : MonoBehaviour {
                 randomScale = Random.Range(0.59f, 0.9f);
 
 
-            GameObject obj = Instantiate(Wall, bufferPos, Quaternion.identity);
+            GameObject obj = (GameObject)Instantiate(Wall, bufferPos, Quaternion.identity);
             obj.transform.localScale = new Vector2(randomScale , 1f);
             bufferScale = obj.transform.localScale.x;
+            obj.transform.parent = parentObj.transform;
             obj.SetActive(true);
 
             if (!PlayerController.isFeverTouch)
@@ -52,14 +55,29 @@ public class GenerateWall : MonoBehaviour {
                 //Debug.Log(randomGenerate);
                 //カケラを生成
                 //if(randomGenerate < 1 && randomGenerate >= 0){
-                    kakeraObj = Instantiate(kakera, new Vector3(Random.Range(-0.1f * bufferScale, 0.95f * bufferScale) + bufferPos.x, temp.y + 3, 0), Quaternion.identity);
-                    kakeraObj.SetActive(true);
+                kakeraObj = (GameObject)Instantiate(kakera, new Vector3(Random.Range(-0.1f * bufferScale, 0.95f * bufferScale) + bufferPos.x, temp.y + 3, 0), Quaternion.identity);
+                kakeraObj.transform.parent = parentObj.transform;
+                kakeraObj.SetActive(true);
 
                 //}
             }
 
         }
         Debug.Log("generateNum : " + generateNum);
+    }
 
+    public void ResetPos()
+    {
+        foreach (Transform child in parentObj.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        generateNum = 1;
+        bufferPos = firstWallPos;
+        GameObject go = Instantiate(Wall, bufferPos, Quaternion.identity);
+        go.transform.parent = parentObj.transform;
+        go.SetActive(true);
+        InstantiateWall();
+        InstantiateWall();
     }
 }

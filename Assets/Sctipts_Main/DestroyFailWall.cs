@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class DestroyFailWall : MonoBehaviour {
 
-    public Text text;
     [SerializeField] private WallBreak wallBreak;
     //private int breakNum = 0;
 
@@ -16,7 +15,6 @@ public class DestroyFailWall : MonoBehaviour {
             //    breakNum++;
             //    //PlayerController.breakWallNum.Value++;
             //    //Debug.Log("WallBreakNum : " + PlayerController.breakWallNum.Value);
-            //    //text.text = PlayerController.breakWallNum.Value.ToString();
             //}
             Destroy(this.gameObject, 3.0f);
 

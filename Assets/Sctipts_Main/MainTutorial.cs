@@ -16,7 +16,10 @@ public class MainTutorial : MonoBehaviour {
         {
             tapText.SetActive(false);
         }
+    }
 
-
+    public void ResetData()
+    {
+        tapText.SetActive(true);
     }
 }
