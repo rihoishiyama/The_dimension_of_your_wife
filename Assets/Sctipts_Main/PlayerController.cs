@@ -53,7 +53,6 @@ public class PlayerController : MonoBehaviour
     {
         sources = gameObject.GetComponents<AudioSource>();
         compBlock.SetActive(false);
-
         anim = this.gameObject.GetComponent<Animator>();
         clearAnima = gameClearText.GetComponent<Animator>();
         gameOverAnim = gameOverEffect.GetComponent<Animator>();

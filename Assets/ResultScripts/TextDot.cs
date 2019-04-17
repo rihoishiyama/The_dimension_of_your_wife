@@ -19,7 +19,7 @@ public class TextDot : MonoBehaviour
 
 	public string playerName;
 
-	[SerializeField]public GameObject lastButton;
+	[SerializeField]public GameObject lastButton, tapBtnObj, skipBtnObj;
 
 	// [SerializeField] GameObject preStartImage;
 	// [SerializeField] GameObject preStartButton;
@@ -46,40 +46,54 @@ public class TextDot : MonoBehaviour
 	[SerializeField] AudioClip audioClip1;
 
 	private AudioSource audioSource;
+    private Button tapBtn, skipBtn;
 
 
-	// 文字の表示が完了しているかどうか
-	public bool IsCompleteDisplayText 
+    // 文字の表示が完了しているかどうか
+    public bool IsCompleteDisplayText 
 	{
 		get { return  Time.time > timeElapsed + timeUntilDisplay; }
 	}
 
 	void Start()
 	{
-		// chara = GameObject.Find("airi");
-		audioSource = gameObject.GetComponent<AudioSource>();
+        tapBtn = tapBtnObj.GetComponent<Button>();
+        skipBtn = skipBtnObj.GetComponent<Button>();
+        audioSource = gameObject.GetComponent<AudioSource>();
 		playerName = PlayerPrefs.GetString("PLAYER_NAME","君");
 		scenarios[5] = "あいり「" + playerName + "くんならまたちょうせんしてくれるよね・・・。」";
 
-		SetNextLine();
-	}
+        if (PlayerPrefs.HasKey("TextDot"))
+            skipBtnObj.SetActive(true);
+        else
+        {
+            skipBtnObj.SetActive(false);
+            SaveDataInitialize();
+        }
+
+        SetNextLine();
+
+        tapBtn.onClick.AddListener(() =>
+        {
+            // 文字の表示が完了してるならクリック時に次の行を表示する
+            if (IsCompleteDisplayText && currentLine < scenarios.Length)
+            {
+                audioSource.clip = audioClip1;
+                audioSource.Play();
+                SetNextLine();
+            }
+            else
+            {
+                // 完了してないなら文字をすべて表示する
+                timeUntilDisplay = 0;
+            }
+        });
+
+        skipBtn.onClick.AddListener(() => SkipToLastLine());
+    }
 
 	void Update () 
 	{
-		// 文字の表示が完了してるならクリック時に次の行を表示する
-		if( IsCompleteDisplayText ){
-			if(currentLine < scenarios.Length && Input.GetMouseButtonDown(0)){
-				audioSource.clip = audioClip1;
-        		audioSource.Play ();
-				SetNextLine();
-			}
-		}else{
-		// 完了してないなら文字をすべて表示する
-			if(Input.GetMouseButtonDown(0)){
-				timeUntilDisplay = 0;
-			}
-		}
-
 		int displayCharacterCount = (int)(Mathf.Clamp01((Time.time - timeElapsed) / timeUntilDisplay) * currentText.Length);
 		if( displayCharacterCount != lastUpdateCharacter ){
 			uiText.text = currentText.Substring(0, displayCharacterCount);
@@ -95,30 +109,6 @@ public class TextDot : MonoBehaviour
 		}else{
 			lastButton.SetActive(false);
 		}
-		// if(currentLine == aniInto1){
-		// 	chara.GetComponent<Chara3DController>().setAnimation1();
-		// }
-
-		// if(currentLine == aniInto2){
-		// 	chara.GetComponent<Chara3DController>().setAnimation1();
-		// }
-
-		// if(currentLine == aniInto3){
-		// 	chara.GetComponent<Chara3DController>().setAnimation3();
-		// }
-
-		// if(currentLine == aniInto4){
-		// 	chara.GetComponent<Chara3DController>().setAnimation2();
-		// }
-
-		// if(currentLine == aniInto5){
-		// 	chara.GetComponent<Chara3DController>().setAnimation4();
-		// }
-
-		// if(currentLine == aniInto6){
-		// 	chara.GetComponent<Chara3DController>().setAnimation5();
-		// }
-
 	}
 
 	public void MovePlayScene(){
@@ -135,4 +125,20 @@ public class TextDot : MonoBehaviour
 		lastUpdateCharacter = -1;
 
 	}
+
+    public void SkipToLastLine()
+    {
+        currentText = scenarios[scenarios.Length - 1];
+        timeUntilDisplay = currentText.Length * intervalForCharacterDisplay;
+        timeElapsed = Time.time;
+        currentLine = aniInto1;
+        lastUpdateCharacter = -1;
+        skipBtnObj.SetActive(false);
+    }
+
+    private void SaveDataInitialize()
+    {
+        PlayerPrefs.SetInt("TextDot", 1);
+        PlayerPrefs.Save();
+    }
 }
