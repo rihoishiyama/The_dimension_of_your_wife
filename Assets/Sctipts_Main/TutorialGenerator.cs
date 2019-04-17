@@ -9,7 +9,7 @@ public class TutorialGenerator : MonoBehaviour
 
 	void Awake () 
     {
-        if (!PlayerPrefs.HasKey("In"))
+        if (!PlayerPrefs.HasKey("Init"))
         {
             SaveDataInitialize();
             tutorialCanvas.SetActive(true);

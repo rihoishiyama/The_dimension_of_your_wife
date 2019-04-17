@@ -37,7 +37,7 @@ public class Text3D : MonoBehaviour
 
 	[SerializeField] public int lastPosition;
 
-	[SerializeField] public GameObject lastButton;
+	[SerializeField] public GameObject lastButton, tapBtnObj, skipBtnObj;
 
     private GameObject chara;
 
@@ -61,21 +61,25 @@ public class Text3D : MonoBehaviour
 
 	private float clearSeconds;
 
-
-	// [SerializeField] GameObject nameTextbox;
-
-	// [SerializeField] GameObject nameButton;
+    private Button tapBtn, skipBtn;
 
 
-	// 文字の表示が完了しているかどうか
-	public bool IsCompleteDisplayText 
+    // [SerializeField] GameObject nameTextbox;
+
+    // [SerializeField] GameObject nameButton;
+
+
+    // 文字の表示が完了しているかどうか
+    public bool IsCompleteDisplayText 
 	{
 		get { return  Time.time > timeElapsed + timeUntilDisplay; }
 	}
 
 	void Start()
 	{
-		audioSource = gameObject.GetComponent<AudioSource>();
+        tapBtn = tapBtnObj.GetComponent<Button>();
+        skipBtn = skipBtnObj.GetComponent<Button>();
+        audioSource = gameObject.GetComponent<AudioSource>();
 		chara = GameObject.Find("airi");
 		playerName = PlayerPrefs.GetString("PLAYER_NAME","君");
         clearTime = PlayerPrefs.GetFloat("ClearTime", 0);
@@ -87,25 +91,38 @@ public class Text3D : MonoBehaviour
 		scenarios[1] = "見てみてー！\n" + playerName + "君のおかげで3Dになれたよ！";
         scenarios[2] = clearMinutes + "分" + clearSeconds.ToString("F2") + "秒もかけて会いに来てくれて嬉しい！";
 
-		SetNextLine();
-	}
+
+        if (PlayerPrefs.HasKey("Text3D"))
+            skipBtnObj.SetActive(true);
+        else
+        {
+            skipBtnObj.SetActive(false);
+            SaveDataInitialize();
+        }
+
+        SetNextLine();
+
+        tapBtn.onClick.AddListener(() =>
+        {
+            // 文字の表示が完了してるならクリック時に次の行を表示する
+            if (IsCompleteDisplayText && currentLine < scenarios.Length)
+            {
+                audioSource.clip = audioClip1;
+                audioSource.Play();
+                SetNextLine();
+            }
+            else
+            {
+                // 完了してないなら文字をすべて表示する
+                timeUntilDisplay = 0;
+            }
+        });
+
+        skipBtn.onClick.AddListener(() => SkipToLastLine());
+    }
 
 	void Update () 
 	{
-		// 文字の表示が完了してるならクリック時に次の行を表示する
-		if( IsCompleteDisplayText ){
-			if(currentLine < scenarios.Length && Input.GetMouseButtonDown(0)){
-				audioSource.clip = audioClip1;
-        		audioSource.Play ();
-				SetNextLine();
-			}
-		}else{
-		// 完了してないなら文字をすべて表示する
-			if(Input.GetMouseButtonDown(0)){
-				timeUntilDisplay = 0;
-			}
-		}
-
 		int displayCharacterCount = (int)(Mathf.Clamp01((Time.time - timeElapsed) / timeUntilDisplay) * currentText.Length);
 		if( displayCharacterCount != lastUpdateCharacter ){
 			uiText.text = currentText.Substring(0, displayCharacterCount);
@@ -173,4 +190,21 @@ public class Text3D : MonoBehaviour
 		lastUpdateCharacter = -1;
 
 	}
+
+    public void SkipToLastLine()
+    {
+        currentText = scenarios[scenarios.Length - 1];
+        timeUntilDisplay = currentText.Length * intervalForCharacterDisplay;
+        timeElapsed = Time.time;
+        currentLine = lastPosition;
+        lastUpdateCharacter = -1;
+        skipBtnObj.SetActive(false);
+    }
+
+    private void SaveDataInitialize()
+    {
+        PlayerPrefs.SetInt("Text3D", 1);
+        PlayerPrefs.Save();
+    }
+
 }

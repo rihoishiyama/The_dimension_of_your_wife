@@ -19,36 +19,14 @@ public class Text2D : MonoBehaviour
 
 	public string playerName;
 
-	[SerializeField]public GameObject lastButton;
+	[SerializeField] GameObject lastButton, tapBtnObj, skipBtnObj;
 
-	// [SerializeField] GameObject preStartImage;
-	// [SerializeField] GameObject preStartButton;
-
-	// [SerializeField] InputField nameInput;
 	[SerializeField] public int aniInto1;
-
-	// [SerializeField] public int aniInto2;
-
-	// [SerializeField] public int aniInto3;
-
-	// [SerializeField] public int aniInto4;
-
-	// [SerializeField] public int aniInto5;
-
-	// [SerializeField] public int aniInto6;
-
-	// public GameObject chara;
-
-	// [SerializeField] GameObject nameTextbox;
-
-	// [SerializeField] GameObject nameButton;
 
 	[SerializeField] public AudioClip audioClip1;
 
 	private AudioSource audioSource;
-
-	//[SerializeField] public AudioClip audioClip2;
-
+    private Button tapBtn, skipBtn;
 
 	// 文字の表示が完了しているかどうか
 	public bool IsCompleteDisplayText 
@@ -58,37 +36,46 @@ public class Text2D : MonoBehaviour
 
 	void Start()
 	{
-		// chara = GameObject.Find("airi");
+        tapBtn = tapBtnObj.GetComponent<Button>();
+        skipBtn = skipBtnObj.GetComponent<Button>();
 		audioSource = gameObject.GetComponent<AudioSource>();
-		playerName = PlayerPrefs.GetString("PLAYER_NAME","君");
+
+        if (PlayerPrefs.HasKey("Text2D")) 
+            skipBtnObj.SetActive(true);
+        else 
+        {
+            skipBtnObj.SetActive(false);
+            SaveDataInitialize();
+        }
+
+        playerName = PlayerPrefs.GetString("PLAYER_NAME","君");
 		scenarios[1] = "お疲れさま、" + playerName + "君。";
 
 		SetNextLine();
-	}
+
+        tapBtn.onClick.AddListener(() => 
+        {
+            // 文字の表示が完了してるならクリック時に次の行を表示する
+            if (IsCompleteDisplayText && currentLine < scenarios.Length)
+            {
+                audioSource.clip = audioClip1;
+                audioSource.Play();
+                SetNextLine();
+            } else {
+                // 完了してないなら文字をすべて表示する
+                timeUntilDisplay = 0;
+            }
+        });
+
+        skipBtn.onClick.AddListener(() => SkipToLastLine());
+    }
 
 	void Update () 
 	{
-		// 文字の表示が完了してるならクリック時に次の行を表示する
-		if( IsCompleteDisplayText ){
-			if(currentLine < scenarios.Length && Input.GetMouseButtonDown(0)){
-				audioSource.clip = audioClip1;
-        		audioSource.Play ();
-				SetNextLine();
-				
-			}
-		}else{
-		// 完了してないなら文字をすべて表示する
-			if(Input.GetMouseButtonDown(0)){
-				timeUntilDisplay = 0;
-			}
-		}
-
 		int displayCharacterCount = (int)(Mathf.Clamp01((Time.time - timeElapsed) / timeUntilDisplay) * currentText.Length);
 		if( displayCharacterCount != lastUpdateCharacter ){
 			uiText.text = currentText.Substring(0, displayCharacterCount);
 			lastUpdateCharacter = displayCharacterCount;
-
-		
 		}
 
 //アニメーションを入れる場所を生成
@@ -98,30 +85,6 @@ public class Text2D : MonoBehaviour
 		}else{
 			lastButton.SetActive(false);
 		}
-		// if(currentLine == aniInto1){
-		// 	chara.GetComponent<Chara3DController>().setAnimation1();
-		// }
-
-		// if(currentLine == aniInto2){
-		// 	chara.GetComponent<Chara3DController>().setAnimation1();
-		// }
-
-		// if(currentLine == aniInto3){
-		// 	chara.GetComponent<Chara3DController>().setAnimation3();
-		// }
-
-		// if(currentLine == aniInto4){
-		// 	chara.GetComponent<Chara3DController>().setAnimation2();
-		// }
-
-		// if(currentLine == aniInto5){
-		// 	chara.GetComponent<Chara3DController>().setAnimation4();
-		// }
-
-		// if(currentLine == aniInto6){
-		// 	chara.GetComponent<Chara3DController>().setAnimation5();
-		// }
-
 	}
 
 	public void MovePlayScene(){
@@ -138,4 +101,21 @@ public class Text2D : MonoBehaviour
 		lastUpdateCharacter = -1;
 
 	}
+
+    public void SkipToLastLine()
+    {
+        currentText = scenarios[scenarios.Length - 1];
+        timeUntilDisplay = currentText.Length * intervalForCharacterDisplay;
+        timeElapsed = Time.time;
+        currentLine = aniInto1;
+        lastUpdateCharacter = -1;
+        skipBtnObj.SetActive(false);
+    }
+
+    private void SaveDataInitialize()
+    {
+        PlayerPrefs.SetInt("Text2D", 1);
+        PlayerPrefs.Save();
+    }
+
 }
