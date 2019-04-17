@@ -31,7 +31,7 @@ public class TextAR : MonoBehaviour
 
 	[SerializeField] public int lastPosition;
 
-	[SerializeField] public GameObject lastButton;
+	[SerializeField] public GameObject lastButton, tapBtnObj, skipBtnObj;
 
 	public GameObject chara;
 
@@ -57,24 +57,28 @@ public class TextAR : MonoBehaviour
 
 	private int count = 0;
 
-	// private AudioSource audioSource;
+    private Button tapBtn, skipBtn;
 
-	
-
-	// [SerializeField] GameObject nameTextbox;
-
-	// [SerializeField] GameObject nameButton;
+    // private AudioSource audioSource;
 
 
-	// 文字の表示が完了しているかどうか
-	public bool IsCompleteDisplayText 
+
+    // [SerializeField] GameObject nameTextbox;
+
+    // [SerializeField] GameObject nameButton;
+
+
+    // 文字の表示が完了しているかどうか
+    public bool IsCompleteDisplayText 
 	{
 		get { return  Time.time > timeElapsed + timeUntilDisplay; }
 	}
 
 	void Start()
 	{
-		audioSource = gameObject.GetComponent<AudioSource>();
+        tapBtn = tapBtnObj.GetComponent<Button>();
+        skipBtn = skipBtnObj.GetComponent<Button>();
+        audioSource = gameObject.GetComponent<AudioSource>();
 		chara = GameObject.Find("MyCharacter");
 		playerName = PlayerPrefs.GetString("PLAYER_NAME","君");
 		clearTime = PlayerPrefs.GetFloat("ClearTime",0);
@@ -95,25 +99,37 @@ public class TextAR : MonoBehaviour
         scenarios[3] = clearMinutes + "分" + clearSeconds.ToString("F2") + "秒で会いに来てくれるなんて嬉しい！";
 		scenarios[5] = "もちろんだよ！これからもよろしくね、" + playerName + "君！";
 
-		SetNextLine();
-	}
+        if (PlayerPrefs.HasKey("TextAR"))
+            skipBtnObj.SetActive(true);
+        else
+        {
+            skipBtnObj.SetActive(false);
+            SaveDataInitialize();
+        }
+
+        SetNextLine();
+
+        tapBtn.onClick.AddListener(() =>
+        {
+            // 文字の表示が完了してるならクリック時に次の行を表示する
+            if (IsCompleteDisplayText && currentLine < scenarios.Length)
+            {
+                audioSource.clip = audioClip1;
+                audioSource.Play();
+                SetNextLine();
+            }
+            else
+            {
+                // 完了してないなら文字をすべて表示する
+                timeUntilDisplay = 0;
+            }
+        });
+
+        skipBtn.onClick.AddListener(() => SkipToLastLine());
+    }
 
 	void Update () 
 	{
-		// 文字の表示が完了してるならクリック時に次の行を表示する
-		if( IsCompleteDisplayText ){
-			if(currentLine < scenarios.Length && Input.GetMouseButtonDown(0)){
-				audioSource.clip = audioClip1;
-        		audioSource.Play ();
-				SetNextLine();
-			}
-		}else{
-		// 完了してないなら文字をすべて表示する
-			if(Input.GetMouseButtonDown(0)){
-				timeUntilDisplay = 0;
-			}
-		}
-
 		int displayCharacterCount = (int)(Mathf.Clamp01((Time.time - timeElapsed) / timeUntilDisplay) * currentText.Length);
 		if( displayCharacterCount != lastUpdateCharacter ){
 			uiText.text = currentText.Substring(0, displayCharacterCount);
@@ -173,4 +189,20 @@ public class TextAR : MonoBehaviour
 		lastUpdateCharacter = -1;
 
 	}
+
+    public void SkipToLastLine()
+    {
+        currentText = scenarios[scenarios.Length - 1];
+        timeUntilDisplay = currentText.Length * intervalForCharacterDisplay;
+        timeElapsed = Time.time;
+        currentLine = lastPosition;
+        lastUpdateCharacter = -1;
+        skipBtnObj.SetActive(false);
+    }
+
+    private void SaveDataInitialize()
+    {
+        PlayerPrefs.SetInt("TextAR", 1);
+        PlayerPrefs.Save();
+    }
 }
