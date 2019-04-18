@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Text airiComment;
     [SerializeField] Image airiRenderer;
     [SerializeField] Sprite smile, angry, normal, happy, zeroPenalty, onePenalty, twoPenalty;
+    [SerializeField] GameObject heartEffect, IntensiveIineEffect;
 
     private SpriteRenderer childPlayersr;
 
@@ -172,7 +173,7 @@ public class PlayerController : MonoBehaviour
         {
             if (breakWallNum.Value < 13)
                 playerSpeed = 2.0f;
-            else if (PlayerController.breakWallNum.Value < 35)
+            else if (breakWallNum.Value < 35)
                 playerSpeed = 3.0f;
             else
                 playerSpeed = 4.0f;
@@ -273,7 +274,7 @@ public class PlayerController : MonoBehaviour
     //フィーバー時の移動
     public void FeverTime()
     {
-        var velocity = new Vector3(0, 0.1f, 0) * m_speed;
+        var velocity = new Vector3(0, 0.2f, 0) * m_speed;
         transform.localPosition += velocity;
     }
 
@@ -299,16 +300,23 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator FeverCountDown()
     {
+        heartEffect.SetActive(true);
+
         sources[1].clip = startFeverSound;
         sources[1].Play();
 
         isFeverTouch = true;
         tapObj.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
 
-        yield return new WaitForSeconds(2.0f);
+        IntensiveIineEffect.SetActive(true);
+
+        yield return new WaitForSeconds(1.7f);
 
         m_speed = 0;
         ActiveBlock();
+        heartEffect.SetActive(false);
+        IntensiveIineEffect.SetActive(false);
 
         yield return new WaitForSeconds(0.1f);
 
@@ -328,6 +336,7 @@ public class PlayerController : MonoBehaviour
     public void EndFever()
     {
         kakeraCount.Value = 0;
+        bufferTime = 0;
         heart1.sprite = NotKakera;
         heart2.sprite = NotKakera;
         heart3.sprite = NotKakera;
@@ -430,6 +439,8 @@ public class PlayerController : MonoBehaviour
         failedNum = 0;
         bufferTime = 0;
         childPlayersr.sprite = zeroPenalty;
+        heartEffect.SetActive(false);
+        IntensiveIineEffect.SetActive(false);
 
         // PlayerのPositionを初期化
         Vector3 temp = transform.position;

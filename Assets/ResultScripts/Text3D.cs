@@ -63,11 +63,7 @@ public class Text3D : MonoBehaviour
 
     private Button tapBtn, skipBtn;
 
-
-    // [SerializeField] GameObject nameTextbox;
-
-    // [SerializeField] GameObject nameButton;
-
+    private bool onePlay, _onePlay;
 
     // 文字の表示が完了しているかどうか
     public bool IsCompleteDisplayText 
@@ -83,7 +79,8 @@ public class Text3D : MonoBehaviour
 		chara = GameObject.Find("airi");
 		playerName = PlayerPrefs.GetString("PLAYER_NAME","君");
         clearTime = PlayerPrefs.GetFloat("ClearTime", 0);
-
+        onePlay = false;
+        _onePlay = false;
 
         clearMinutes = (int)clearTime / 60;
 		clearSeconds = clearTime - (clearMinutes * 60);
@@ -127,19 +124,8 @@ public class Text3D : MonoBehaviour
 		if( displayCharacterCount != lastUpdateCharacter ){
 			uiText.text = currentText.Substring(0, displayCharacterCount);
 			lastUpdateCharacter = displayCharacterCount;
-
-		
 		}
 
-//アニメーションを入れる場所を生成
-
-		// if(currentLine == aniInto){
-		// 	nameTextbox.SetActive(true);
-		// 	nameButton.SetActive(true);
-		// }else{
-		// 	nameTextbox.SetActive(false);
-		// 	nameButton.SetActive(false);
-		// }
         if(currentLine == aniInto1 || currentLine == aniInto2){
 			chara.GetComponent<Chara3DController>().setAnimation1();
 		}
@@ -164,14 +150,17 @@ public class Text3D : MonoBehaviour
 			lastButton.SetActive(true);
 		}
 
-		if(currentLine == audioInto2){
+        if(currentLine == audioInto2 && !onePlay){
 			audioSource.clip = audioClip2;
         	audioSource.Play ();
+            onePlay = true;
 		}
 
-		if(currentLine == audioInto3){
+		if(currentLine == audioInto3 && !_onePlay)
+        {
 			audioSource.clip = audioClip3;
         	audioSource.Play ();
+            _onePlay = true;
 		}
 
 	}

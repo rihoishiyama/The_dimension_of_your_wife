@@ -8,7 +8,7 @@ public class DistanceScroll : MonoBehaviour {
 
     [SerializeField] private GameObject distanceObj;
     [SerializeField] private Image distanceRectPos;
-    public static int limitGoal = 45; //変更するもの　リザルトの秒数、壁生成のレベルデザイン
+    public static int limitGoal = 60; //変更するもの　リザルトの秒数、壁生成のレベルデザイン
     private float distance = 265f;
     private float onescroll = 0f;
 

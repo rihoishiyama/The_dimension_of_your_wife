@@ -12,7 +12,8 @@ public class SceneController : MonoBehaviour {
 	// private AudioSource audioSource;
 
 	// Use this for initialization
-	public void GameSart(){
+
+	public void GameStart(){
 
 		// audioSource = gameObject.GetComponent<AudioSource>();
 		// audioSource.clip = audioClip1;
@@ -38,11 +39,13 @@ public class SceneController : MonoBehaviour {
 	}
 	
 	public void GoTitle(){
-		
-		// audioSource = gameObject.GetComponent<AudioSource>();
-		// audioSource.clip = audioClip1;
+
+        // audioSource = gameObject.GetComponent<AudioSource>();
+        // audioSource.clip = audioClip1;
         // audioSource.Play ();
-		SceneManager.LoadScene("Title");
+        PlayerPrefs.SetInt("Block", 1);
+        PlayerPrefs.Save();
+        SceneManager.LoadScene("Title");
 	}
 
 	public void GoFirstTitle(){
@@ -57,5 +60,4 @@ public class SceneController : MonoBehaviour {
 		PlayerPrefs.DeleteAll();
 		Debug.Log("データを削除しました。");
 	}
-
 }
